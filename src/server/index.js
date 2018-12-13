@@ -160,6 +160,8 @@ const makeFields = (defs) => {
 	return fields;
 };
 
+app.use(express.static('dist'));
+
 app.get('/api/debug', (req, res) => {
 	let fields = makeFields(fieldDefs);
 	let fieldStr = fields.join()
@@ -231,6 +233,5 @@ app.get('*', (req,res) =>{
     res.json("Path not found!");
 });
 
-app.use(express.static('dist'));
 app.listen(8080, () => console.log('Listening on port 8080!'));
 
