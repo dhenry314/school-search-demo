@@ -17,9 +17,14 @@ App to demonstrate building a full-stack Express/React app using the CollegeScor
 ### Development mode
 
 1. npm run dev
+2. Go to http://localhost:3000
 
 ### Production mode
 
+1. npm build
 2. npm start
+3. Go to http://localhost:8080
+
+
 
 
