@@ -1,12 +1,16 @@
 import React from "react";
 import { render } from "react-dom";
+import { BrowserRouter, Route, Link } from "react-router-dom";
+import ReactToPrint from "react-to-print";
 import { throttle, debounce } from "throttle-debounce";
 import School from "./School.js";
+import PrintSchool from "./PrintSchool.js";
 
 class App extends React.Component {
   constructor(props) {
+	console.log("schools page is loading");
     super(props);
-    this.state = { q: "", schoolID: null };
+    this.state = { q: "", schoolID: null, printID: null };
     this.autocompleteSearchDebounced = debounce(500, this.autocompleteSearch);
     this.autocompleteSearchThrottled = throttle(200, this.autocompleteSearch);
   }
@@ -34,8 +38,13 @@ class App extends React.Component {
   };
 
   clickHandler = (id) => {
-	this.setState({ schoolResults: [], q: "", schoolID: id })
+	this.setState({ schoolResults: [], q: "", schoolID: id, printID: null })
 	console.log(id);  
+  }
+  
+  pdfHandler = (id) => {
+	let printID = this.state.schoolID;
+	this.setState({ schoolResults: [], q: "", schoolID: null, printID: printID  });
   }
 
   render() {
@@ -54,6 +63,16 @@ class App extends React.Component {
           onChange={this.changeQuery}
         />
         <hr />
+        { this.state.schoolID ? (
+          <div>
+        <ReactToPrint
+          trigger={() => <button color="info">Print Report</button> }
+          content={() => this.componentRef}
+        /> 
+    	 <button type="button" onClick={ this.pdfHandler }>
+				  PDF
+			 </button>
+		 </div>) : null}
         {results.length ? (
           <button
             type="button"
@@ -69,7 +88,8 @@ class App extends React.Component {
           })}
         </ul>
         ) : null }
-        <School schoolID={ this.state.schoolID } />
+        <School schoolID={ this.state.schoolID } ref={el => (this.componentRef = el)} />
+        <PrintSchool schoolID={ this.state.printID } />
       </div>
     );
   }

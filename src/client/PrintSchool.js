@@ -1,40 +1,81 @@
 import React, {Component} from 'react';
 import {Doughnut} from 'react-chartjs-2';
 import {HorizontalBar} from 'react-chartjs-2';
+import Page from './Page';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
+const pxToMm = (px) => {
+  return Math.floor(px/document.getElementById('myMm').offsetHeight);
+};
+
+const mmToPx = (mm) => {
+  return document.getElementById('myMm').offsetHeight*mm;
+};
+
+const range = (start, end) => {
+    return Array(end-start).join(0).split(0).map(function(val, id) {return id+start});
+};
 
 
-class School extends Component {
+class PrintSchool extends Component {
 
       constructor(props) {
 		 super(props);
 		 let schoolData = null;
+		 let printedID = null;
 		 let programsData = null;
 		 let reData = null;
 		 let costData = null;
 		 this.state = { schoolData: schoolData }  
 	  }
 	  
+	  componentDidUpdate(prevProps, prevState) {
+		    if ( this.props.schoolID && (this.state.schoolData != prevState.schoolData) ) {
+			  let filename = this.props.schoolID + "_collegeRpt.pdf";
+			  const input = document.getElementById('multiPage');
+			  const inputHeightMm = pxToMm(input.offsetHeight);
+			  const a4WidthMm = 210;
+			  const a4HeightMm = 297; 
+			  const a4HeightPx = mmToPx(a4HeightMm); 
+			  const numPages = inputHeightMm <= a4HeightMm ? 1 : Math.floor(inputHeightMm/a4HeightMm) + 1;
+
+			  html2canvas(input)
+				.then((canvas) => {
+				  const imgData = canvas.toDataURL('image/png');
+				  let pdf = null;
+				  // Document of a4WidthMm wide and inputHeightMm high
+				  if (inputHeightMm > a4HeightMm) {
+					// elongated a4 (system print dialog will handle page breaks)
+					pdf = new jsPDF('p', 'mm', [inputHeightMm+16, a4WidthMm]);
+				  } else {
+					// standard a4
+					pdf = new jsPDF();
+				  }
+				  pdf.addImage(imgData, 'PNG', 0, 0);
+				  pdf.save(`${filename}`);
+				  
+				});
+			  ;
+	       }
+      }
+	  
 	  componentWillReceiveProps (nextProps) {
-		   if(this.props.schoolID != nextProps.schoolID) {
+		   console.log(nextProps);
+		   if( nextProps.schoolID && (this.props.schoolID != nextProps.schoolID) ) {
 				this.getSchoolData(nextProps.schoolID)
 		   }
 	  }
 	  
 	  getSchoolData(schoolID) {
-		  if(schoolID) {
-			  let url = '/api/school/' + schoolID
-			  fetch(url)
-			  .then(res => res.json())
-			  .then(res => { 
-				   this.setState({
-					  schoolData: res
-				   })
-			  })
-	      } else {
-			  this.setState({
-				schoolData: null  
-			  })  
-		  }
+	      let url = '/api/school/' + schoolID
+	      fetch(url)
+          .then(res => res.json())
+          .then(res => { 
+               this.setState({
+                  schoolData: res
+               })
+          })
           return true;
       }
       
@@ -81,19 +122,23 @@ class School extends Component {
 		chartData['datasets'].push(dataset);  
 		return chartData;
 	  }
+
       render() {
-	    if(this.state.schoolData) {
+	    if(this.props.schoolID && this.state.schoolData) {
 	    const data = this.state.schoolData;
 	    let programsData = null;
 	    let reData = null;
 	    let costData = null;
-	    programsData = this.getChartData(data.latest.academics.program_percentage,0);
+		programsData = this.getChartData(data.latest.academics.program_percentage,0);
 		reData = this.getChartData(data.latest.student.demographics.race_ethnicity,3);
 		costData = this.getChartData(data.latest.cost.net_price.public.by_income_level,6,false);
 		let chartStyle = {
             pageBreakInside: "avoid"
-        }
-        let barChartOptions = {
+        };
+        let chartOptions = {
+			animation: false
+		};
+		let barChartOptions = {
 			legend: {
 				display: false,
 			},
@@ -113,7 +158,8 @@ class School extends Component {
 			}
 		};
 		return(
-		  <div className="p-4">
+		<div id={"multiPage"} className="bg-white shadow-1 center pa4"  style={{width: "210mm", height: ""}}>
+ 		  <div className="p-4">
 		    <h3 className="text-secondary">{ data.school.name  }</h3>
 		    { data.school.alias ? ( <span>({ data.school.alias })</span> ) : null  }
 		    <table className="table table-sm table-striped table-bordered">
@@ -137,16 +183,18 @@ class School extends Component {
 		    </table>
 		    <div className="border border-info rounded p-4" style={chartStyle}>
 		     <h4 className="text-secondary">Program Percentages out of 100</h4>
-		     { programsData ? ( <Doughnut data={programsData} /> ) : ( <span className="bg-warning">No data available.</span> )}
+		     { programsData ? ( <Doughnut data={programsData} options={ chartOptions } /> ) : ( <span className="bg-warning">No data available.</span> )}
 		    </div>
 		    <div className="border border-info rounded p-4" style={chartStyle}>
 		     <h3 className="text-secondary">Race/Ethnicity</h3>
-   		     { reData ? ( <Doughnut data={reData} /> ) : ( <span className="bg-warning">No data available.</span> )}
+   		     { reData ? ( <Doughnut data={reData} options={ chartOptions }/> ) : ( <span className="bg-warning">No data available.</span> )}
    		    </div>
    		    <div className="border border-info rounded p-4" style={chartStyle}>
 		     <h3 className="text-secondary">Price by Income Level</h3>
    		     { costData ? ( <HorizontalBar data={costData} options={ barChartOptions }/> ) : ( <span className="bg-warning">No data available.</span> )}
    		    </div>
+		  </div>
+		  <div id="myMm" style={{height: "1mm"}} />
 		  </div>
 		)
 	   } else {
@@ -155,4 +203,4 @@ class School extends Component {
       }
 
 }
-export default School;
+export default PrintSchool;

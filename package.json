@@ -13,15 +13,20 @@
   "author": "David Henry",
   "license": "MIT",
   "dependencies": {
+    "@react-pdf/renderer": "^1.0.0",
     "babel-polyfill": "^6.26.0",
     "chart.js": "^2.7.3",
     "dotenv": "^6.2.0",
     "express": "^4.16.3",
+    "html2canvas": "1.0.0-alpha.12",
+    "jspdf": "1.4.1",
     "react": "^16.5.2",
     "react-chartjs-2": "^2.7.4",
     "react-dom": "^16.5.2",
+    "react-router-dom": "^4.3.1",
     "request": "^2.34",
     "request-promise": "^4.2.2",
+    "styled-components": "^4.1.2",
     "throttle-debounce": "1.0.1"
   },
   "devDependencies": {
@@ -42,6 +47,7 @@
     "file-loader": "^2.0.0",
     "html-webpack-plugin": "^3.2.0",
     "nodemon": "^1.17.3",
+    "react-to-print": "^2.0.0-alpha-4",
     "style-loader": "^0.23.0",
     "url-loader": "^1.0.1",
     "webpack": "^4.5.0",
