@@ -21,10 +21,15 @@ App to demonstrate building a full-stack Express/React app using the CollegeScor
 
 ### Production mode
 
-1. npm build
+1. npm run build
 2. npm start
 3. Go to http://localhost:8080
 
+### Usage
+
+1. Type a school name in the search box at the top of the page
+2. Select a school from the list of search results
+3. Options: a) print the report;  b) download a PDF of the report
 
 
 
