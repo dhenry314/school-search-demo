@@ -25,6 +25,10 @@ App to demonstrate building a full-stack Express/React app using the CollegeScor
 2. npm start
 3. Go to http://localhost:8080
 
+NOTE: To run the app in the background as a deamon, you can use pm2 (see https://www.npmjs.com/package/pm2)
+-- npm install -g pm2
+-- pm2 start npm --start
+
 ### Usage
 
 1. Type a school name in the search box at the top of the page
